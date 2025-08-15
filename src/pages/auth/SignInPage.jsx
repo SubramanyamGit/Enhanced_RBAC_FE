@@ -33,7 +33,7 @@ const SignInPage = () => {
           login(data.token, data.mustChangePassword);
           updateUser(data.user);
           toast.success("Login Success");
-          navigate("/admin/user");
+          navigate("/dashboard");
         }
       },
       onError: (err) => {
