@@ -46,7 +46,7 @@ const PermissionsPage = () => {
   const handleEdit = (permission) => setEditPermission(permission);
 
   const handleDelete = async (permission) => {
-    if (window.confirm(`Delete permission "${permission.permission_name}"?`)) {
+    if (window.confirm(`Delete permission "${permission.name}"?`)) {
       try {
         await deletePermission.mutateAsync(permission.permission_id);
         toast.success("Permission deleted");

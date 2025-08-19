@@ -28,6 +28,10 @@ const UsersPage = () => {
       header: "Created At",
       accessor: (row) => dayjs(row.created_at).format("MMM D, YYYY h:mm A"),
     },
+       {
+      header: "Updated At",
+      accessor: (row) => dayjs(row.updated_at).format("MMM D, YYYY h:mm A"),
+    },
   ];
 
   const handleEdit = (row) => {
@@ -66,9 +70,9 @@ const UsersPage = () => {
           itemsPerPage={5}
           showActions={true}
           showEdit={canEdit}
-          showDelete={canDelete}
+          showDelete={false}
           onEdit={handleEdit}
-          onDelete={handleDelete}
+          // onDelete={handleDelete}
         />
       )}
 

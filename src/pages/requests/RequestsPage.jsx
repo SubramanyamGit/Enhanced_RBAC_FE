@@ -18,7 +18,12 @@ const RequestPage = () => {
   const { data: allPermissions = [] } = usePermissions();
 
   const [tab, setTab] = useState("Pending");
-  const { data: requests = [], isLoading } = useRequestsByStatus(tab);
+
+  const {
+    data: requests = [],
+    isLoading,
+    isFetching,
+  } = useRequestsByStatus(tab);
 
   const createRequest = useCreateRequest();
   const approveRequest = useApproveRequest();
@@ -61,7 +66,7 @@ const RequestPage = () => {
       setExpiresAt("");
       setSelectedPermission(null);
     } catch {
-      // toast console.error("Failed to submit");
+      toast.error("Failed to submit");
     }
   };
 
@@ -97,41 +102,40 @@ const RequestPage = () => {
       }
       setActionModal({ show: false, type: "", row: null });
     } catch {
-      // toast console.error("Action failed");
+      toast.error("Action failed");
     }
   };
-
-  const columns = [
-    { header: "Permission", accessor: "permission_name" },
-    { header: "Reason", accessor: "reason" },
-    { header: "Status", accessor: "status" },
-    {
-      header: "Requested At",
-      accessor: (row) =>
-        row.requested_at
-          ? dayjs(row.requested_at).format("MMM D, YYYY h:mm A")
-          : "-",
-    },
-    {
-      header: "Expires At",
-      accessor: (row) =>
-        row.expires_at
-          ? dayjs(row.expires_at).format("MMM D, YYYY h:mm A")
-          : "-",
-    },
-    ...(user?.permissions?.requests?.includes("approve_requests") ||
-    user?.permissions?.requests?.includes("reject_requests")
-      ? [{ header: "Requested By", accessor: "requested_by_name" }]
-      : []),
-    ...(tab !== "Pending"
-      ? [{ header: "Reviewed By", accessor: "reviewed_by_name" }]
-      : []),
-    ...(canApprove || canReject
+const columns = [
+  { header: "Permission", accessor: "permission_name" },
+  { header: "Reason", accessor: "reason" },
+  { header: "Status", accessor: "status" },
+  {
+    header: "Requested At",
+    accessor: (row) =>
+      row.requested_at
+        ? dayjs(row.requested_at).format("MMM D, YYYY h:mm A")
+        : "-",
+  },
+  {
+    header: "Expires At",
+    accessor: (row) =>
+      row.expires_at ? dayjs(row.expires_at).format("MMM D, YYYY h:mm A") : "-",
+  },
+  ...(user?.permissions?.requests?.includes("approve_requests") ||
+  user?.permissions?.requests?.includes("reject_requests")
+    ? [{ header: "Requested By", accessor: "requested_by_name" }]
+    : []),
+  ...(tab !== "Pending"
+    ? [{ header: "Reviewed By", accessor: "reviewed_by_name" }]
+    : []),
+  ...(canApprove || canReject
+    ? tab === "Pending"
       ? [
           {
             header: "Actions",
             accessor: (row) => {
-              if (tab !== "Pending") return "";
+              const anyMutationPending =
+                approveRequest.isPending || rejectRequest.isPending;
               return (
                 <>
                   {canApprove && (
@@ -139,6 +143,7 @@ const RequestPage = () => {
                       variant="success"
                       size="sm"
                       className="me-2"
+                      disabled={anyMutationPending}
                       onClick={() => openActionModal(row, "approve")}
                     >
                       Approve
@@ -148,6 +153,7 @@ const RequestPage = () => {
                     <Button
                       variant="danger"
                       size="sm"
+                      disabled={anyMutationPending}
                       onClick={() => openActionModal(row, "reject")}
                     >
                       Reject
@@ -158,8 +164,21 @@ const RequestPage = () => {
             },
           },
         ]
-      : []),
-  ];
+      : []
+    : []),
+];
+
+
+  const table = (
+    <CustomTable
+      columns={columns}
+      data={requests}
+      isLoading={isLoading || isFetching}
+      itemsPerPage={5}
+      emptyMessage={`No ${tab.toLowerCase()} requests found`}
+      showSearch={false}
+    />
+  );
 
   return (
     <div className="p-4">
@@ -172,20 +191,21 @@ const RequestPage = () => {
         )}
       </div>
 
-      <Tabs activeKey={tab} onSelect={setTab}>
+      <Tabs activeKey={tab} onSelect={(k) => k && setTab(k)}>
         <Tab eventKey="Pending" title="Pending" />
         <Tab eventKey="Approved" title="Approved" />
         <Tab eventKey="Rejected" title="Rejected" />
       </Tabs>
 
-      <CustomTable
-        columns={columns}
-        data={requests}
-        isLoading={isLoading}
-        itemsPerPage={5}
-        emptyMessage={`No ${tab.toLowerCase()} requests found`}
-        showSearch={false}
-      />
+      {/* Page-level loader fallback (in case CustomTable ignores isLoading) */}
+      {isLoading || isFetching ? (
+        <div className="d-flex align-items-center gap-2 mt-3">
+          <Spinner animation="border" size="sm" />
+          <span>Loading {tab.toLowerCase()} requests…</span>
+        </div>
+      ) : (
+        table
+      )}
 
       {/* Request Permission Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
@@ -226,9 +246,9 @@ const RequestPage = () => {
             <Button
               className="mt-4"
               onClick={handleCreate}
-              disabled={createRequest.isLoading}
+              disabled={createRequest.isPending}
             >
-              {createRequest.isLoading ? (
+              {createRequest.isPending ? (
                 <>
                   <Spinner size="sm" animation="border" className="me-2" />
                   Submitting...
@@ -275,14 +295,23 @@ const RequestPage = () => {
           <Button
             variant="secondary"
             onClick={() => setActionModal({ show: false, type: "", row: null })}
+            disabled={approveRequest.isPending || rejectRequest.isPending}
           >
             Cancel
           </Button>
           <Button
             variant={actionModal.type === "approve" ? "success" : "danger"}
             onClick={handleActionConfirm}
+            disabled={approveRequest.isPending || rejectRequest.isPending}
           >
-            Confirm
+            {(approveRequest.isPending || rejectRequest.isPending) ? (
+              <>
+                <Spinner size="sm" animation="border" className="me-2" />
+                Processing...
+              </>
+            ) : (
+              "Confirm"
+            )}
           </Button>
         </Modal.Footer>
       </Modal>
