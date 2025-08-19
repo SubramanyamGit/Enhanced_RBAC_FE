@@ -24,9 +24,9 @@ const SignInPage = () => {
 
   const handleSubmit = async (values, { setStatus }) => {
     mutate(values, {
-      onSuccess: (data) => {
+      onSuccess: (data) => {        
         if (data.mustChangePassword) {
-          localStorage.setItem("isPasswordChanged", !data.mustChangePassword);
+          localStorage.setItem("isPasswordChanged", data.mustChangePassword);
           localStorage.setItem("token", data.token);
           navigate(`/set-new-password`);
         } else {

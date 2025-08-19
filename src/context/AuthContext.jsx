@@ -36,6 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("isPasswordChanged")
     setToken(null);
     setUser(null);
     navigate("/signin");
