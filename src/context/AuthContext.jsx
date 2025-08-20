@@ -26,7 +26,6 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = (jwtToken,mustChangePassword) => {
-      console.log("jwtToken", jwtToken);
     localStorage.setItem("isPasswordChanged", !mustChangePassword);
 
     localStorage.setItem("token", jwtToken);

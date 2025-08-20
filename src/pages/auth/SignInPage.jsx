@@ -26,7 +26,7 @@ const SignInPage = () => {
     mutate(values, {
       onSuccess: (data) => {        
         if (data.mustChangePassword) {
-          localStorage.setItem("isPasswordChanged", data.mustChangePassword);
+          localStorage.setItem("isPasswordChanged", !data.mustChangePassword);
           localStorage.setItem("token", data.token);
           navigate(`/set-new-password`);
         } else {
