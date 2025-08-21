@@ -73,9 +73,9 @@ const AddDepartmentModal = ({ show, onClose, onSuccess }) => {
             variant="primary"
             type="submit"
             className="mt-4"
-            disabled={createDepartment.isLoading}
+            disabled={createDepartment.isPending}
           >
-            {createDepartment.isLoading ? (
+            {createDepartment.isPending ? (
               <>
                 <Spinner size="sm" animation="border" className="me-2" />
                 Creating...

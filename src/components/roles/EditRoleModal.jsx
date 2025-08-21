@@ -156,9 +156,9 @@ const EditRoleModal = ({ show, role, onClose, onSuccess }) => {
             type="submit"
             className="mt-4"
             variant="primary"
-            disabled={updateRole.isLoading}
+            disabled={updateRole.isPending}
           >
-            {updateRole.isLoading ? (
+            {updateRole.isPending ? (
               <>
                 <Spinner size="sm" animation="border" className="me-2" />
                 Updating...

@@ -1,9 +1,17 @@
-import { Row, Col } from "react-bootstrap";
+import { Row, Col, Spinner } from "react-bootstrap";
 import { useAuth } from "../../context/AuthContext";
-import PermissionsOverview from "../../components/PermissionsOverview"; 
+import PermissionsOverview from "../../components/PermissionsOverview";
 
 const DashboardPage = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center w-100 h-100">
+        <Spinner animation="border" variant="primary" />
+      </div>
+    );
+  }
+
   const { full_name, permissions } = user || {};
 
   return (

@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isPasswordChanged,setIsPasswordChanged] = useState(localStorage.getItem("isPasswordChanged"))
   const [user, setUser] = useState(null);
+  const [isLoading,setIsLoading] = useState(true)
   const navigate = useNavigate();
 
   // Fetch user details (roles + permissions)
@@ -15,6 +16,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await axiosInstanceWithToken.get("/users/my_permissions");
       setUser(res.data);
+      setIsLoading(false)
     } catch (err) {
         console.error(" Failed to fetch user:", err);
       // logout(); // token might be invalid
@@ -23,6 +25,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (token) fetchUser();
+    return setIsLoading(true)
   }, [token]);
 
   const login = (jwtToken,mustChangePassword) => {
@@ -42,7 +45,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout,isPasswordChanged }}>
+    <AuthContext.Provider value={{ user, token, login, logout,isPasswordChanged,isLoading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -72,9 +72,9 @@ const EditDepartmentModal = ({ show, department, onClose, onSuccess }) => {
             variant="primary"
             type="submit"
             className="mt-3"
-            disabled={updateMutation.isLoading}
+            disabled={updateMutation.isPending}
           >
-            {updateMutation.isLoading ? 'Updating...' : 'Update'}
+            {updateMutation.isPending ? 'Updating...' : 'Update'}
           </Button>
         </Form>
       </Modal.Body>

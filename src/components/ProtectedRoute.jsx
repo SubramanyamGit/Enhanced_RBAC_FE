@@ -7,7 +7,7 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/signin" replace />;
   }
 
-  if (isPasswordChanged) {
+  if (!isPasswordChanged) {
     return <Navigate to="/set-new-password" replace />;
   }
 

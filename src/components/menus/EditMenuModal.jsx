@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Spinner } from 'react-bootstrap';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useUpdateMenu } from '../../hooks/useMenu';
@@ -26,7 +26,7 @@ const EditMenuModal = ({ show, menu, onClose, onSuccess }) => {
         toast.success('Menu updated');
         onSuccess();
       } catch {
-        // toast.error('Failed to update menu');
+        toast.error('Failed to update menu');
       }
     },
   });
@@ -79,7 +79,21 @@ const EditMenuModal = ({ show, menu, onClose, onSuccess }) => {
             </Form.Control.Feedback>
           </Form.Group>
 
-          <Button className="mt-4" type="submit" variant="primary">Update</Button>
+          <Button
+            className="mt-4"
+            type="submit"
+            variant="primary"
+            disabled={updateMenu.isPending}
+          >
+            {updateMenu.isPending ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Updating...
+              </>
+            ) : (
+              "Update"
+            )}
+          </Button>
         </Form>
       </Modal.Body>
     </Modal>

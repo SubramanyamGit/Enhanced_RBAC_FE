@@ -115,9 +115,9 @@ const AddRoleModal = ({ show, onClose, onSuccess }) => {
             type="submit"
             className="mt-4"
             variant="primary"
-            disabled={createRole.isLoading}
+            disabled={createRole.isPending}
           >
-            {createRole.isLoading ? (
+            {createRole.isPending ? (
               <>
                 <Spinner size="sm" animation="border" className="me-2" />
                 Creating...

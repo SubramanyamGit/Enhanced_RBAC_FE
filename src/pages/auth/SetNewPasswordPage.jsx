@@ -13,8 +13,13 @@ const SetNewPasswordPage = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const isPasswordChanged = localStorage.getItem("isPasswordChanged")
     if (!token) {
       navigate("/signin");
+    }
+
+    if(isPasswordChanged){
+      navigate("/dashboard")
     }
   }, [navigate]);
 

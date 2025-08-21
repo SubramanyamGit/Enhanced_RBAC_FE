@@ -92,8 +92,8 @@ console.log("user",user);
             <Button variant="secondary" onClick={onClose} className="me-2">
               Cancel
             </Button>
-            <Button type="submit" variant="primary" disabled={updateUser.isLoading}>
-              {updateUser.isLoading ? "Updating..." : "Update"}
+            <Button type="submit" variant="primary" disabled={updateUser.isPending}>
+              {updateUser.isPending ? "Updating..." : "Update"}
             </Button>
           </div>
         </Form>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Spinner } from 'react-bootstrap';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useCreatePermission } from '../../hooks/usePermissions';
@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 
 const AddPermissionModal = ({ show, onClose, onSuccess }) => {
   const createPermission = useCreatePermission();
+  const isBusy = createPermission.isPending || createPermission.isLoading;
 
   const formik = useFormik({
     initialValues: {
@@ -23,14 +24,19 @@ const AddPermissionModal = ({ show, onClose, onSuccess }) => {
         resetForm();
         onSuccess();
       } catch {
-        // toast.error('Failed to create permission');
+        toast.error('Failed to create permission');
       }
     },
   });
 
   return (
-    <Modal show={show} onHide={onClose}>
-      <Modal.Header closeButton>
+    <Modal
+      show={show}
+      onHide={isBusy ? undefined : onClose}
+      backdrop={isBusy ? 'static' : true}
+      keyboard={!isBusy}
+    >
+      <Modal.Header closeButton={!isBusy}>
         <Modal.Title>Add Permission</Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -42,6 +48,7 @@ const AddPermissionModal = ({ show, onClose, onSuccess }) => {
               value={formik.values.name}
               onChange={formik.handleChange}
               isInvalid={formik.touched.name && !!formik.errors.name}
+              disabled={isBusy}
             />
             <Form.Control.Feedback type="invalid">
               {formik.errors.name}
@@ -54,10 +61,20 @@ const AddPermissionModal = ({ show, onClose, onSuccess }) => {
               name="description"
               value={formik.values.description}
               onChange={formik.handleChange}
+              disabled={isBusy}
             />
           </Form.Group>
 
-          <Button type="submit" className="mt-4" variant="primary">Create</Button>
+          <Button type="submit" className="mt-4" variant="primary" disabled={isBusy}>
+            {isBusy ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Creating...
+              </>
+            ) : (
+              'Create'
+            )}
+          </Button>
         </Form>
       </Modal.Body>
     </Modal>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Spinner } from 'react-bootstrap';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useCreateMenu } from '../../hooks/useMenu';
@@ -26,7 +26,7 @@ const AddMenuModal = ({ show, onClose, onSuccess }) => {
         resetForm();
         onSuccess();
       } catch {
-        // toast.error('Failed to create menu');
+        toast.error('Failed to create menu');
       }
     },
   });
@@ -45,6 +45,7 @@ const AddMenuModal = ({ show, onClose, onSuccess }) => {
               value={formik.values.label}
               onChange={formik.handleChange}
               isInvalid={formik.touched.label && !!formik.errors.label}
+              disabled={createMenu.isPending}
             />
             <Form.Control.Feedback type="invalid">
               {formik.errors.label}
@@ -58,6 +59,7 @@ const AddMenuModal = ({ show, onClose, onSuccess }) => {
               value={formik.values.route}
               onChange={formik.handleChange}
               isInvalid={formik.touched.route && !!formik.errors.route}
+              disabled={createMenu.isLoading}
             />
             <Form.Control.Feedback type="invalid">
               {formik.errors.route}
@@ -71,13 +73,28 @@ const AddMenuModal = ({ show, onClose, onSuccess }) => {
               value={formik.values.menu_key}
               onChange={formik.handleChange}
               isInvalid={formik.touched.menu_key && !!formik.errors.menu_key}
+              disabled={createMenu.isLoading}
             />
             <Form.Control.Feedback type="invalid">
               {formik.errors.menu_key}
             </Form.Control.Feedback>
           </Form.Group>
 
-          <Button className="mt-4" type="submit" variant="primary">Create</Button>
+          <Button
+            className="mt-4"
+            type="submit"
+            variant="primary"
+            disabled={createMenu.isPending}
+          >
+            {createMenu.isPending ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Creating...
+              </>
+            ) : (
+              'Create'
+            )}
+          </Button>
         </Form>
       </Modal.Body>
     </Modal>
