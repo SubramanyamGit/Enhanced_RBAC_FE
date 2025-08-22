@@ -13,7 +13,8 @@ const SignInPage = () => {
   const navigate = useNavigate();
   const { login, token, updateUser } = useAuth();
   const { mutate, isPending, error } = useSignIn();
-  const { mutateAsync: sendTempPwd, isPending: isSendingTemp } = useForgotPassword();
+  const { mutateAsync: sendTempPwd, isPending: isSendingTemp } =
+    useForgotPassword();
 
   const initialValues = { email: "", password: "" };
 
@@ -24,12 +25,14 @@ const SignInPage = () => {
 
   const handleSubmit = async (values, { setStatus }) => {
     mutate(values, {
-      onSuccess: (data) => {        
+      onSuccess: (data) => {
         if (data.mustChangePassword) {
           localStorage.setItem("isPasswordChanged", !data.mustChangePassword);
           localStorage.setItem("token", data.token);
           navigate(`/set-new-password`);
         } else {
+          localStorage.setItem("isPasswordChanged", !mustChangePassword);
+          localStorage.setItem("token", jwtToken);
           login(data.token, data.mustChangePassword);
           updateUser(data.user);
           toast.success("Login Success");
@@ -37,7 +40,8 @@ const SignInPage = () => {
         }
       },
       onError: (err) => {
-        const message = err.response?.data?.error || "Sign in failed. Try again.";
+        const message =
+          err.response?.data?.error || "Sign in failed. Try again.";
         setStatus(message);
       },
     });
@@ -66,7 +70,10 @@ const SignInPage = () => {
           )}
         </Col>
 
-        <Col md={6} className="d-flex align-items-center justify-content-center">
+        <Col
+          md={6}
+          className="d-flex align-items-center justify-content-center"
+        >
           <div style={{ width: "100%", maxWidth: "400px", padding: "20px" }}>
             <h2 className="text-primary mb-4">Sign In</h2>
 
@@ -88,7 +95,9 @@ const SignInPage = () => {
                 const onForgot = async () => {
                   const email = values.email?.trim();
                   if (!email) {
-                    setStatus("Please enter your email to receive a temporary password.");
+                    setStatus(
+                      "Please enter your email to receive a temporary password."
+                    );
                     return;
                   }
                   try {
@@ -99,11 +108,15 @@ const SignInPage = () => {
                   }
                   try {
                     await sendTempPwd(email);
-                    toast.success("If the email exists, a temporary password was sent.");
+                    toast.success(
+                      "If the email exists, a temporary password was sent."
+                    );
                     setStatus("");
                   } catch {
                     // keep response generic to avoid email enumeration
-                    toast.success("If the email exists, a temporary password was sent.");
+                    toast.success(
+                      "If the email exists, a temporary password was sent."
+                    );
                   }
                 };
 
