@@ -31,8 +31,7 @@ const SignInPage = () => {
           localStorage.setItem("token", data.token);
           navigate(`/set-new-password`);
         } else {
-          localStorage.setItem("isPasswordChanged", !mustChangePassword);
-          localStorage.setItem("token", jwtToken);
+       
           login(data.token, data.mustChangePassword);
           updateUser(data.user);
           toast.success("Login Success");
