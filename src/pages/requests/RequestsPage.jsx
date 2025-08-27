@@ -34,6 +34,8 @@ const RequestPage = () => {
   const [reason, setReason] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
 
+  const [submitted, setSubmitted] = useState(false);
+
   const [actionModal, setActionModal] = useState({
     show: false,
     type: "",
@@ -51,13 +53,17 @@ const RequestPage = () => {
   }));
 
   const handleCreate = async () => {
-    if (!selectedPermission) return toast.error("Select a permission");
+    setSubmitted(true);
+
+    if (!selectedPermission || !reason.trim()) {
+      return; // stop submission if validation fails
+    }
 
     try {
       await createRequest.mutateAsync({
         permission_name: selectedPermission.label,
         permission_id: selectedPermission.value,
-        reason,
+        reason: reason.trim(),
         expires_at: expiresAt || null,
       });
       toast.success("Request submitted");
@@ -65,6 +71,7 @@ const RequestPage = () => {
       setReason("");
       setExpiresAt("");
       setSelectedPermission(null);
+      setSubmitted(false);
     } catch {
       toast.error("Failed to submit");
     }
@@ -105,69 +112,71 @@ const RequestPage = () => {
       toast.error("Action failed");
     }
   };
-const columns = [
-  { header: "Permission", accessor: "permission_name" },
-  { header: "Reason", accessor: "reason" },
-  { header: "Status", accessor: "status" },
-  {
-    header: "Requested At",
-    accessor: (row) =>
-      row.requested_at
-        ? dayjs(row.requested_at).format("MMM D, YYYY h:mm A")
-        : "-",
-  },
-  {
-    header: "Expires At",
-    accessor: (row) =>
-      row.expires_at ? dayjs(row.expires_at).format("MMM D, YYYY h:mm A") : "-",
-  },
-  ...(user?.permissions?.requests?.includes("approve_requests") ||
-  user?.permissions?.requests?.includes("reject_requests")
-    ? [{ header: "Requested By", accessor: "requested_by_name" }]
-    : []),
-  ...(tab !== "Pending"
-    ? [{ header: "Reviewed By", accessor: "reviewed_by_name" }]
-    : []),
-  ...(canApprove || canReject
-    ? tab === "Pending"
-      ? [
-          {
-            header: "Actions",
-            accessor: (row) => {
-              const anyMutationPending =
-                approveRequest.isPending || rejectRequest.isPending;
-              return (
-                <>
-                  {canApprove && (
-                    <Button
-                      variant="success"
-                      size="sm"
-                      className="me-2"
-                      disabled={anyMutationPending}
-                      onClick={() => openActionModal(row, "approve")}
-                    >
-                      Approve
-                    </Button>
-                  )}
-                  {canReject && (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      disabled={anyMutationPending}
-                      onClick={() => openActionModal(row, "reject")}
-                    >
-                      Reject
-                    </Button>
-                  )}
-                </>
-              );
-            },
-          },
-        ]
-      : []
-    : []),
-];
 
+  const columns = [
+    { header: "Permission", accessor: "permission_name" },
+    { header: "Reason", accessor: "reason" },
+    { header: "Status", accessor: "status" },
+    {
+      header: "Requested At",
+      accessor: (row) =>
+        row.requested_at
+          ? dayjs(row.requested_at).format("MMM D, YYYY h:mm A")
+          : "-",
+    },
+    {
+      header: "Expires At",
+      accessor: (row) =>
+        row.expires_at
+          ? dayjs(row.expires_at).format("MMM D, YYYY h:mm A")
+          : "-",
+    },
+    ...(user?.permissions?.requests?.includes("approve_requests") ||
+    user?.permissions?.requests?.includes("reject_requests")
+      ? [{ header: "Requested By", accessor: "requested_by_name" }]
+      : []),
+    ...(tab !== "Pending"
+      ? [{ header: "Reviewed By", accessor: "reviewed_by_name" }]
+      : []),
+    ...(canApprove || canReject
+      ? tab === "Pending"
+        ? [
+            {
+              header: "Actions",
+              accessor: (row) => {
+                const anyMutationPending =
+                  approveRequest.isPending || rejectRequest.isPending;
+                return (
+                  <>
+                    {canApprove && (
+                      <Button
+                        variant="success"
+                        size="sm"
+                        className="me-2"
+                        disabled={anyMutationPending}
+                        onClick={() => openActionModal(row, "approve")}
+                      >
+                        Approve
+                      </Button>
+                    )}
+                    {canReject && (
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        disabled={anyMutationPending}
+                        onClick={() => openActionModal(row, "reject")}
+                      >
+                        Reject
+                      </Button>
+                    )}
+                  </>
+                );
+              },
+            },
+          ]
+        : []
+      : []),
+  ];
 
   const table = (
     <CustomTable
@@ -197,7 +206,6 @@ const columns = [
         <Tab eventKey="Rejected" title="Rejected" />
       </Tabs>
 
-      {/* Page-level loader fallback (in case CustomTable ignores isLoading) */}
       {isLoading || isFetching ? (
         <div className="d-flex align-items-center gap-2 mt-3">
           <Spinner animation="border" size="sm" />
@@ -214,6 +222,7 @@ const columns = [
         </Modal.Header>
         <Modal.Body>
           <Form>
+            {/* Permission Field */}
             <Form.Group>
               <Form.Label>Permission</Form.Label>
               <Select
@@ -221,23 +230,36 @@ const columns = [
                 value={selectedPermission}
                 onChange={setSelectedPermission}
               />
+              {submitted && !selectedPermission && (
+                <div className="invalid-feedback d-block">
+                  Permission is required.
+                </div>
+              )}
             </Form.Group>
 
+            {/* Reason Field */}
             <Form.Group className="mt-3">
               <Form.Label>Reason</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
+                required
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
+                isInvalid={submitted && !reason.trim()}
+                placeholder="Describe why you need this permission"
               />
+              <Form.Control.Feedback type="invalid">
+                Reason is required.
+              </Form.Control.Feedback>
             </Form.Group>
 
+            {/* Expires At Field */}
             <Form.Group className="mt-3">
               <Form.Label>Expires At</Form.Label>
               <Form.Control
                 type="datetime-local"
-                min={new Date().toISOString().slice(0, 16)} // disables past dates/times
+                min={new Date().toISOString().slice(0, 16)}
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
               />
